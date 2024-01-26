@@ -1,0 +1,6 @@
+notify:
+  description: "Send a notification using Whatsapper"
+  fields:
+    message:
+      description: The message to send
+      example: "Hello World"
