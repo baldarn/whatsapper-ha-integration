@@ -1,6 +1,8 @@
 notify:
+  name: 'Whatsapper notify service'
   description: "Send a notification using Whatsapper"
   fields:
     message:
+      name: Send message
       description: The message to send
       example: "Hello World"
