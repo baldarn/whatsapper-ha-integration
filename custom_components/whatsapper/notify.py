@@ -10,6 +10,7 @@ import requests
 from homeassistant.components.notify import (
     PLATFORM_SCHEMA,
     BaseNotificationService,
+    ATTR_DATA,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -19,6 +20,9 @@ _LOGGER = logging.getLogger(__name__)
 
 HOST_PORT = "host_port"
 CONF_CHAT_ID = "chat_id"
+ATTR_IMAGE = "image"
+ATTR_IMAGE_TYPE = "image_type"
+ATTR_IMAGE_NAME = "image_name"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({vol.Required(CONF_CHAT_ID): vol.Coerce(str)})
 
@@ -47,11 +51,25 @@ class WhatsapperNotificationService(BaseNotificationService):
 
     def send_message(self, message="", **kwargs):
         """Send a message to the target."""
+
+        data = kwargs.get(ATTR_DATA)
+
         try:
-            # Actually send the message
-            url = f'http://{self.host_port}/command'
-            body = {"command":"sendMessage", "params":[self.chat_id, message]}
-            resp = requests.post(url, json = body)
-            print(resp.text)
+            if data is None:
+                # send the message
+                url = f'http://{self.host_port}/command'
+                body = {"command":"sendMessage", "params":[self.chat_id, message]}
+                resp = requests.post(url, json = body)
+
+            # Send an image
+            if data is not None and ATTR_IMAGE in data and ATTR_IMAGE_TYPE in data and ATTR_IMAGE_NAME in data:
+                image = data.get(ATTR_IMAGE)
+                image_type = data.get(ATTR_IMAGE_TYPE)
+                image_name = data.get(ATTR_IMAGE_NAME)
+
+                url = f'http://{self.host_port}/command/media'
+                body = {"params":[self.chat_id, image_type, image, image_name]}
+                resp = requests.post(url, json = body)
+
         except Exception as e:
-            _LOGGER.error("Sending to %s failed: %s", self._chat_id, e)
+            _LOGGER.error("Sending to %s failed: %s", self.chat_id, e)
