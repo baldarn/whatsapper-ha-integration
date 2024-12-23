@@ -11,8 +11,9 @@ Install Whatsapper add on.
 You can find that in [alexbelgium](https://github.com/alexbelgium/hassio-addons)
 
 ### Installation
-Whatsapper is now part ot the Default HACS repositories list.
-Just add it from the Integrations list.
+Whatsapper is still not part ot the Default HACS repositories list.
+
+To add this, add this repository as `custom repository` in HACS, then install it searching `whatsapper` in the search form.
 
 ### Configuration
 To use Whatsapper notifications edit the `configuration.yaml` file.
