@@ -21,7 +21,7 @@ To use Whatsapper notifications edit the `configuration.yaml` file.
 ```yaml
 notify:
   - platform: whatsapper
-    name: some name that you want
+    name: whatsapp
     chat_id: 123123123@g.us # WhatsApp chat id (see below)
 ```
 
@@ -42,7 +42,7 @@ If your whatsapper instance is somewhere else, you can specify that:
 ```yaml
 notify:
   - platform: whatsapper
-    name: some name that you want
+    name: whatsapp
     host_port: 192.168.1.123:4000 # host:port of the whatsapper instance
     chat_id: 123123123@g.us # WhatsApp chat id
 ```
