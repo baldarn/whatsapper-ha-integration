@@ -11,6 +11,8 @@ from homeassistant.components.notify import (
     PLATFORM_SCHEMA,
     BaseNotificationService,
     ATTR_DATA,
+    ATTR_TITLE,
+    ATTR_MESSAGE,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -58,7 +60,16 @@ class WhatsapperNotificationService(BaseNotificationService):
             if data is None:
                 # send the message
                 url = f'http://{self.host_port}/command'
-                body = {"command":"sendMessage", "params":[self.chat_id, message.replace("\\n", "\n")]}
+                if ATTR_TITLE in kwargs:
+                    title = kwargs.get(ATTR_TITLE)
+                    # Unescape any escaped newlines in message and title
+                    if title is not None:
+                        msg = f"{title}\n\n{message}"
+                    else:
+                        msg = message
+                    # Replace literal backslash-n with real newlines
+                    msg = msg.replace("\\n", "\n")
+                    body = {"command": "sendMessage", "params": [self.chat_id, msg]}
                 resp = requests.post(url, json = body)
 
             # Send an image
