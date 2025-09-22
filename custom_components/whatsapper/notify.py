@@ -58,7 +58,7 @@ class WhatsapperNotificationService(BaseNotificationService):
             if data is None:
                 # send the message
                 url = f'http://{self.host_port}/command'
-                body = {"command":"sendMessage", "params":[self.chat_id, message]}
+                body = {"command":"sendMessage", "params":[self.chat_id, message.replace("\\n", "\n")]}
                 resp = requests.post(url, json = body)
 
             # Send an image
