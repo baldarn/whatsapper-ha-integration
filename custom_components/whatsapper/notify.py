@@ -53,34 +53,24 @@ class WhatsapperNotificationService(BaseNotificationService):
 
     def send_message(self, message="", **kwargs):
         """Send a message to the target."""
-
-        data = kwargs.get(ATTR_DATA)
-
         try:
-            if data is None:
-                # send the message
-                url = f'http://{self.host_port}/command'
-                if ATTR_TITLE in kwargs:
-                    title = kwargs.get(ATTR_TITLE)
-                    # Unescape any escaped newlines in message and title
-                    if title is not None:
-                        msg = f"{title}\n\n{message}"
-                    else:
-                        msg = message
-                    # Replace literal backslash-n with real newlines
-                    msg = msg.replace("\\n", "\n")
-                    body = {"command": "sendMessage", "params": [self.chat_id, msg]}
-                resp = requests.post(url, json = body)
-
-            # Send an image
-            if data is not None and ATTR_IMAGE in data and ATTR_IMAGE_TYPE in data and ATTR_IMAGE_NAME in data:
-                image = data.get(ATTR_IMAGE)
-                image_type = data.get(ATTR_IMAGE_TYPE)
-                image_name = data.get(ATTR_IMAGE_NAME)
-
+            data = kwargs.get(ATTR_DATA)
+            
+            # Send image if all required image data is present
+            if data and all(attr in data for attr in [ATTR_IMAGE, ATTR_IMAGE_TYPE, ATTR_IMAGE_NAME]):
                 url = f'http://{self.host_port}/command/media'
-                body = {"params":[self.chat_id, image_type, image, image_name]}
-                resp = requests.post(url, json = body)
+                body = {"params": [self.chat_id, data[ATTR_IMAGE_TYPE], data[ATTR_IMAGE], data[ATTR_IMAGE_NAME]]}
+                requests.post(url, json=body)
+                return
+
+            # Send text message
+            title = kwargs.get(ATTR_TITLE)
+            msg = f"{title}\n\n{message}" if title else message
+            msg = msg.replace("\\n", "\n")
+            
+            url = f'http://{self.host_port}/command'
+            body = {"command": "sendMessage", "params": [self.chat_id, msg]}
+            requests.post(url, json=body)
 
         except Exception as e:
             _LOGGER.error("Sending to %s failed: %s", self.chat_id, e)
