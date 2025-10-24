@@ -13,6 +13,7 @@ from homeassistant.components.notify import (
     ATTR_DATA,
     ATTR_TITLE,
     ATTR_MESSAGE,
+    ATTR_TARGET,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -54,12 +55,14 @@ class WhatsapperNotificationService(BaseNotificationService):
     def send_message(self, message="", **kwargs):
         """Send a message to the target."""
         try:
+            # Use override from notify or the one in the config
+            chat_id = kwargs.get(ATTR_TARGET) if kwargs.get(ATTR_TARGET) else self.chat_id
             data = kwargs.get(ATTR_DATA)
-            
+
             # Send image if all required image data is present
             if data and all(attr in data for attr in [ATTR_IMAGE, ATTR_IMAGE_TYPE, ATTR_IMAGE_NAME]):
                 url = f'http://{self.host_port}/command/media'
-                body = {"params": [self.chat_id, data[ATTR_IMAGE_TYPE], data[ATTR_IMAGE], data[ATTR_IMAGE_NAME]]}
+                body = {"params": [chat_id, data[ATTR_IMAGE_TYPE], data[ATTR_IMAGE], data[ATTR_IMAGE_NAME]]}
                 requests.post(url, json=body)
                 return
 
@@ -69,8 +72,9 @@ class WhatsapperNotificationService(BaseNotificationService):
             msg = msg.replace("\\n", "\n")
             
             url = f'http://{self.host_port}/command'
-            body = {"command": "sendMessage", "params": [self.chat_id, msg]}
+            body = {"command": "sendMessage", "params": [chat_id, msg]}
             requests.post(url, json=body)
 
         except Exception as e:
-            _LOGGER.error("Sending to %s failed: %s", self.chat_id, e)
+            _LOGGER.error("Sending to %s failed: %s", chat_id, e)
+
