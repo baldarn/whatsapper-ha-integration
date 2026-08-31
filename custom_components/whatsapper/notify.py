@@ -26,6 +26,7 @@ CONF_CHAT_ID = "chat_id"
 ATTR_IMAGE = "image"
 ATTR_IMAGE_TYPE = "image_type"
 ATTR_IMAGE_NAME = "image_name"
+ATTR_IMAGE_PATH = "image_path"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({vol.Required(CONF_CHAT_ID): vol.Coerce(str)})
 
@@ -58,6 +59,13 @@ class WhatsapperNotificationService(BaseNotificationService):
             # Use override from notify or the one in the config
             chat_id = kwargs.get(ATTR_TARGET) if kwargs.get(ATTR_TARGET) else self.chat_id
             data = kwargs.get(ATTR_DATA)
+
+            # Send image if path is provided
+            if data and data.get(ATTR_IMAGE_PATH):
+                url = f'http://{self.host_port}/command/media'
+                with open(data[ATTR_IMAGE_PATH], "rb") as f:
+                    requests.post(url, files={"file": f}, data={"chatId": chat_id})
+                return
 
             # Send image if all required image data is present
             if data and all(attr in data for attr in [ATTR_IMAGE, ATTR_IMAGE_TYPE, ATTR_IMAGE_NAME]):
